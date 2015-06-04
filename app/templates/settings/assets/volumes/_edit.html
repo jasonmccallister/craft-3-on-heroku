@@ -1,0 +1,105 @@
+{% extends "_layouts/cp" %}
+
+{% set docsUrl = 'http://buildwithcraft.com/docs/assets' %}
+
+{% import "_includes/forms" as forms %}
+
+
+{% block content %}
+	<form method="post" accept-charset="UTF-8" data-saveshortcut>
+		<input type="hidden" name="action" value="volumes/save-volume">
+		<input type="hidden" name="redirect" value="settings/assets">
+		{% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
+		{{ getCsrfInput() }}
+
+		<div id="assetvolume-settings">
+			{{ forms.textField({
+				first: true,
+				label: "Name"|t,
+				id: 'name',
+				name: 'name',
+				value: (volume is defined ? volume.name : null),
+				errors: (volume is defined ? volume.getErrors('name') : null),
+				autofocus: true,
+				required: true,
+				translatable: true
+			}) }}
+
+            {{ forms.textField({
+                first: true,
+                label: "Handle"|t,
+                id: 'handle',
+                name: 'handle',
+                value: (volume is defined ? volume.handle : null),
+                errors: (volume is defined ? volume.getErrors('handle') : null),
+                required: true,
+            }) }}
+
+            {% if CraftEdition == CraftPro %}
+				<hr>
+
+				{% registerJsResource "js/asseteditvolumesettings.js" %}
+
+				{{ forms.selectField({
+					label: "Type"|t,
+					instructions: "What type of volume is this?"|t,
+					id: 'type',
+					name: 'type',
+					options: volumeTypeOptions,
+					value: volume.getType(),
+					toggle: true
+				}) }}
+
+				{% for _volumeType in volumeTypes %}
+					{% set isCurrent = (_volumeType == volume.getType()) %}
+
+					<div id="{{ _volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+						{% namespace 'types['~_volumeType~']' %}
+							{% if isCurrent %}
+								{{ volume.getSettingsHtml()|raw }}
+							{% else %}
+								{{ volumeInstances[_volumeType].getSettingsHtml()|raw }}
+							{% endif %}
+						{% endnamespace %}
+					</div>
+				{% endfor %}
+			{% else %}
+				{% namespace 'types[craft\\app\\volumes\\Local]' %}
+					{{ volume.getSettingsHtml()|raw }}
+				{% endnamespace %}
+			{% endif %}
+
+            {{ forms.textField({
+                label: "URL"|t,
+                instructions: "The URL to your files."|t,
+                id: 'url',
+                class: 'ltr volume-url',
+                name: 'url',
+                value: (volume is defined ? volume.url : null),
+                errors: (volume is defined ? volume.getErrors('url') : null),
+                required: true,
+                placeholder: "http://example.com/path/to/folder/"|t
+            }) }}
+
+		</div>
+
+		<div id="assetvolume-fieldlayout" class="hidden">
+			{% include "_includes/fieldlayoutdesigner" with {
+				fieldLayout: volume.getFieldLayout(),
+				customizableTabs: false,
+				tab: 'fieldlayout'
+			} only %}
+		</div>
+
+		<hr>
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endblock %}
+
+
+{% if volume is not defined or not volume.handle %}
+    {% registerJs "new Craft.HandleGenerator('#name', '#handle');" %}
+{% endif %}

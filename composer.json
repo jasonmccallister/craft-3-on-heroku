@@ -1,0 +1,11 @@
+{
+  "require": {
+    "php": "~5.6.9",
+    "ext-gd": "*",
+    "ext-iconv": "*",
+    "ext-imagick": "*",
+    "ext-mbstring": "*",
+    "ext-newrelic": "*",
+    "ext-redis": "*"
+  }
+}

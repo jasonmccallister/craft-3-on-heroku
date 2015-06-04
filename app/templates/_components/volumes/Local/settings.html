@@ -1,0 +1,13 @@
+{% from "_includes/forms" import textField %}
+
+{{ textField({
+	label: "File System Path"|t,
+	instructions: "The path to your folder on the file system."|t,
+	id: 'path',
+	class: 'ltr',
+	name: 'path',
+	value: volume.path,
+	errors: volume.getErrors('path'),
+	required: true,
+    placeholder: "/path/to/folder/"|t
+}) }}

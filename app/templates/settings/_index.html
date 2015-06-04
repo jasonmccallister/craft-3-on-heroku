@@ -1,0 +1,30 @@
+{% extends "_layouts/cp" %}
+{% set title = "Settings"|t %}
+
+
+{% block content %}
+	{% registerCssResource 'css/settings.css' %}
+	{% registerJsResource 'js/settings.js' %}
+
+	{% for category, items in craft.cp.settings() %}
+		<h2>{{ category }}</h2>
+
+		<ul class="icons">
+			{% for handle, item in items %}
+				<li><a href="{{ url('settings/'~handle) }}" data-icon="{{ item.icon }}">{{ item.label }}</a></li>
+			{% endfor %}
+		</ul>
+
+		<hr>
+	{% endfor %}
+
+	<h2>{{ "Tools"|t }}</h2>
+
+	<ul class="icons">
+		{% for tool in tools %}
+			{% set triggerId = 'tool-'~tool.getClassName()|id %}
+			<li><a id="{{ triggerId }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getDisplayName() }}</a></li>
+			{% registerJs 'new Craft.Tool("'~triggerId|e('js')~'", "'~tool.getClassName()|e('js')~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()|e('js')~'");' %}
+		{% endfor %}
+	</ul>
+{% endblock %}

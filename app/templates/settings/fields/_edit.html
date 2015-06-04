@@ -1,0 +1,103 @@
+{% extends "_layouts/cp" %}
+
+{% import "_includes/forms" as forms %}
+
+
+{% set content %}
+	<form method="post" accept-charset="UTF-8" data-saveshortcut>
+		{{ getCsrfInput() }}
+		<input type="hidden" name="action" value="fields/save-field">
+		<input type="hidden" name="redirect" value="settings/fields/{groupId}">
+		{% if fieldId is not empty %}
+			<input type="hidden" name="fieldId" value="{{ fieldId }}">
+		{% endif %}
+
+		{{ forms.selectField({
+			first: true,
+			label: "Group"|t,
+			instructions: "Which group should this field be displayed in?"|t,
+			id: 'group',
+			name: 'group',
+			options: groupOptions,
+			value: groupId
+		}) }}
+
+		{{ forms.textField({
+			label: "Name"|t,
+			instructions: "What this field will be called in the CP."|t,
+			id: 'name',
+			name: 'name',
+			value: (field is not empty ? field.name : null),
+			errors: (field is not empty ? field.getErrors('name') : null),
+			required: true,
+			translatable: true,
+			autofocus: true
+		}) }}
+
+		{{ forms.textField({
+			label: "Handle"|t,
+			instructions: "How you’ll refer to this field in the templates."|t,
+			id: 'handle',
+			class: 'code',
+			name: 'handle',
+			maxlength: 64,
+			value: (field is not empty ? field.handle : null),
+			errors: (field is not empty ? field.getErrors('handle') : null),
+			required: true,
+		}) }}
+
+		{{ forms.textareaField({
+			label: "Instructions"|t,
+			instructions: "Helper text to guide the author."|t,
+			id: 'instructions',
+			class: 'nicetext',
+			name: 'instructions',
+			value: (field is not empty ? field.instructions : null),
+			errors: (field is not empty ? field.getErrors('instructions') : null),
+			translatable: true
+		}) }}
+
+		{% if craft.isLocalized() %}
+			{{ forms.checkboxField({
+				label: "This field is translatable"|t,
+				name: 'translatable',
+				checked: (field is not empty ? field.translatable : false)
+			}) }}
+		{% endif %}
+
+		<hr>
+
+		{{ forms.selectField({
+			label: "Field Type"|t,
+			instructions: "What type of field is this?"|t,
+			warning: (fieldId is not empty ? "Changing this may result in data loss."|t),
+			id: 'type',
+			name: 'type',
+			options: fieldTypeOptions,
+			value: field.getType(),
+			errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{type}” could not be found."|t({ type: field.getType() })] : null),
+			toggle: true
+		}) }}
+
+		{% for type in allFieldTypes %}
+			{% set isCurrent = (type == field.getType()) %}
+			<div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+				{% namespace 'types['~type~']' %}
+                    {% set _field = isCurrent ? field : craft.fields.createField(type) %}
+                    {{ _field.getSettingsHtml()|raw }}
+				{% endnamespace %}
+			</div>
+		{% endfor %}
+
+		<hr>
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}
+
+
+{% if field is empty or field.handle is empty %}
+	{% registerJs "new Craft.HandleGenerator('#name', '#handle');" %}
+{% endif %}

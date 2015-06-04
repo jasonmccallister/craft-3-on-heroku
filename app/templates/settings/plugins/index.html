@@ -1,0 +1,74 @@
+{% requireAdmin %}
+
+{% extends "_layouts/cp" %}
+{% set title = "Plugins"|t %}
+
+{% set crumbs = [
+	{ label: "Settings"|t, url: url('settings') }
+] %}
+
+{% set docsUrl = 'http://buildwithcraft.com/docs/plugins/introduction' %}
+
+
+{% set info = craft.plugins.getPluginInfo() %}
+
+
+{% block content %}
+	{% if info|length %}
+		<table id="plugins" class="data fullwidth collapsible">
+			<thead>
+				<th scope="col">{{ "Plugin"|t }}</th>
+				<th scope="col">{{ "Developer"|t }}</th>
+				<th scope="col">{{ "Status"|t }}</th>
+				<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for handle, config in info %}
+					<tr data-name="{{ config.name }}">
+						<th data-title="{{ 'Name'|t }}">
+							{% if config.hasSettings %}
+								<a href="{{ url('settings/plugins/'~handle) }}">{{ config.name }}</a>
+							{% else %}
+								{{ config.name }}
+							{% endif %}
+							<span class="light">{{ config.version }}</span>
+						</th>
+						<td data-title="{{ 'Developer'|t }}"><a{% if config.developerUrl %} href="{{ config.developerUrl }}" target="_blank"{% endif %}>{{ config.developer }}</a></td>
+						<td data-title="{{ 'Status'|t }}">
+							{% if config.isInstalled %}
+								<form method="post" accept-charset="UTF-8">
+									<input type="hidden" name="pluginHandle" value="{{ handle }}">
+									{{ getCsrfInput() }}
+
+									{% if config.isEnabled %}
+										<span class="status on"></span> {{ "Enabled"|t }} 
+										<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disable-plugin">
+									{% else %}
+										<span class="status off"></span> {{ "Disabled"|t }} 
+										<input type="button" value="{{ 'Enable'|t }}" class="btn small formsubmit" data-action="plugins/enable-plugin">
+									{% endif %}
+								</form>
+							{% else %}
+								<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
+							{% endif %}
+						</td>
+						<td class="thin rightalign nowrap">
+							<form method="post" accept-charset="UTF-8">
+								<input type="hidden" name="pluginHandle" value="{{ handle }}">
+								{{ getCsrfInput() }}
+
+								{% if config.isInstalled %}
+									<div class="btn small fullwidth formsubmit" data-action="plugins/uninstall-plugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: config.name }) }}">{{ 'Uninstall'|t }}</div>
+								{% else %}
+									<div class="btn small fullwidth formsubmit" data-action="plugins/install-plugin">{{ 'Install'|t }}</div>
+								{% endif %}
+							</form>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+		<p>{{ "There are no available plugins."|t }}
+	{% endif %}
+{% endblock %}

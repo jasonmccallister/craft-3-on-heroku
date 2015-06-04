@@ -1,0 +1,28 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+	label: "Min Value"|t,
+	id: 'min',
+	name: 'min',
+	value: field.min,
+	size: 5,
+	errors: field.getErrors('min')
+}) }}
+
+{{ forms.textField({
+	label: "Max Value"|t,
+	id: 'max',
+	name: 'max',
+	value: field.max,
+	size: 5,
+	errors: field.getErrors('max')
+}) }}
+
+{{ forms.textField({
+	label: "Decimal Points"|t,
+	id: 'decimals',
+	name: 'decimals',
+	value: field.decimals,
+	size: 1,
+	errors: field.getErrors('decimals')
+}) }}
